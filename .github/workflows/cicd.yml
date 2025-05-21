@@ -29,14 +29,22 @@ jobs:
           terraform init
           terraform apply -auto-approve
 
-      - name: Extract Terraform Outputs to Environment
+      - name: Export Terraform Outputs to GitHub Environment
         run: |
           cd terraform
           terraform output -json > tf_outputs.json
-          echo "MASTER_NODE_IP=$(cat tf_outputs.json | jq -r '.master_node_ip.value')" >> $GITHUB_ENV
-          echo "WORKER_NODE_1_IP=$(cat tf_outputs.json | jq -r '.worker_node_1_ip.value')" >> $GITHUB_ENV
-          echo "WORKER_NODE_2_IP=$(cat tf_outputs.json | jq -r '.worker_node_2_ip.value')" >> $GITHUB_ENV
 
+          echo "----- tf_outputs.json -----"
+          cat tf_outputs.json
+
+          MASTER=$(jq -r '.master_node_ip.value' tf_outputs.json)
+          WORKER1=$(jq -r '.worker_node_1_ip.value' tf_outputs.json)
+          WORKER2=$(jq -r '.worker_node_2_ip.value' tf_outputs.json)
+
+          echo "MASTER_NODE_IP=$MASTER" >> $GITHUB_ENV
+          echo "WORKER_NODE_1_IP=$WORKER1" >> $GITHUB_ENV
+          echo "WORKER_NODE_2_IP=$WORKER2" >> $GITHUB_ENV
+          
       - name: Use the output values
         run: |
           echo "Master IP: $MASTER_NODE_IP"
