@@ -11,7 +11,6 @@ terraform {
 
 provider "aws" {
   region  = var.region  # Replace with your desired AWS region
-  profile = "default"    # Replace with your AWS CLI profile name
 }
 
 resource "aws_instance" "master_node" {
