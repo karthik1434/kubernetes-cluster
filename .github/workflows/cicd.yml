@@ -29,14 +29,14 @@ jobs:
           terraform init
           terraform apply -auto-approve
 
-      - name: Get Terraform Outputs
-        id: tf_outputs
+      - name: Extract Terraform Outputs
         run: |
           cd terraform
           terraform output -json > tf_outputs.json
-          echo "MASTER_NODE_IP=$(jq -r .master_node_ip.value tf_outputs.json)" >> $GITHUB_ENV
-          echo "WORKER_NODE_1_IP=$(jq -r .worker_node_1_ip.value tf_outputs.json)" >> $GITHUB_ENV
-          echo "WORKER_NODE_2_IP=$(jq -r .worker_node_2_ip.value tf_outputs.json)" >> $GITHUB_ENV
+          cat tf_outputs.json  # Optional: Debug
+          echo "MASTER_NODE_IP=$(jq -r '.master_node_ip.value' tf_outputs.json)" >> $GITHUB_ENV
+          echo "WORKER_NODE_1_IP=$(jq -r '.worker_node_1_ip.value' tf_outputs.json)" >> $GITHUB_ENV
+          echo "WORKER_NODE_2_IP=$(jq -r '.worker_node_2_ip.value' tf_outputs.json)" >> $GITHUB_ENV
 
       - name: Use the output values
         run: |
@@ -44,9 +44,9 @@ jobs:
           echo "Worker 1 IP: $WORKER_NODE_1_IP"
           echo "Worker 2 IP: $WORKER_NODE_2_IP"
 
-      - name: Wait for 10 minutes
+      - name: Wait for 5 minutes
         if: always()
-        run: sleep 300
+        run: sleep 180
   
       - name: Terraform Destroy
         if: always()
