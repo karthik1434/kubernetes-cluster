@@ -32,8 +32,11 @@ jobs:
       - name: Export Terraform Outputs to GitHub Environment
         run: |
           cd terraform
-          terraform output -json > tf_outputs.json
 
+          # Use full path to terraform binary
+          /home/runner/work/_temp/***/terraform-bin output -json > tf_outputs.json
+
+          # Optional: debug output
           echo "----- tf_outputs.json -----"
           cat tf_outputs.json
 
@@ -44,7 +47,7 @@ jobs:
           echo "MASTER_NODE_IP=$MASTER" >> $GITHUB_ENV
           echo "WORKER_NODE_1_IP=$WORKER1" >> $GITHUB_ENV
           echo "WORKER_NODE_2_IP=$WORKER2" >> $GITHUB_ENV
-          
+
       - name: Use the output values
         run: |
           echo "Master IP: $MASTER_NODE_IP"
