@@ -36,10 +36,6 @@ jobs:
           # Use full path to terraform binary
           /home/runner/work/_temp/***/terraform-bin output -json > tf_outputs.json
 
-          # Optional: debug output
-          echo "----- tf_outputs.json -----"
-          cat tf_outputs.json
-
           MASTER=$(jq -r '.master_node_ip.value' tf_outputs.json)
           WORKER1=$(jq -r '.worker_node_1_ip.value' tf_outputs.json)
           WORKER2=$(jq -r '.worker_node_2_ip.value' tf_outputs.json)
