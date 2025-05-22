@@ -33,11 +33,16 @@ jobs:
         run: |
           cd terraform
 
-          env:
-          MASTER_NODE_IP: ${{ steps.tf.outputs.master_node_ip }}
-          WORKER_NODE_1_IP: ${{ steps.tf.outputs.worker_node_1_ip }}
-          WORKER_NODE_2_IP: ${{ steps.tf.outputs.worker_node_2_ip }}
+          # Use full path to terraform binary
+          /home/runner/work/_temp/***/terraform-bin output -json > tf_outputs.json
 
+          MASTER=$(jq -r '.master_node_ip.value' tf_outputs.json)
+          WORKER1=$(jq -r '.worker_node_1_ip.value' tf_outputs.json)
+          WORKER2=$(jq -r '.worker_node_2_ip.value' tf_outputs.json)
+
+          echo "MASTER_NODE_IP=$MASTER" >> $GITHUB_ENV
+          echo "WORKER_NODE_1_IP=$WORKER1" >> $GITHUB_ENV
+          echo "WORKER_NODE_2_IP=$WORKER2" >> $GITHUB_ENV
 
 
       - name: Install Ansible and jq
@@ -55,15 +60,11 @@ jobs:
       - name: Set up SSH for Ansible
         run: |
           mkdir -p ~/.ssh
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/karthik.pem
-          chmod 600 ~/.ssh/karthik.pem
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
           ssh-keyscan -H $MASTER_NODE_IP >> ~/.ssh/known_hosts
           ssh-keyscan -H $WORKER_NODE_1_IP >> ~/.ssh/known_hosts
           ssh-keyscan -H $WORKER_NODE_2_IP >> ~/.ssh/known_hosts
-
-
-      - name: Run Ansible Playbook to check SSH connectivity
-        run: ansible-playbook playbooks/init.yaml
           
 
       - name: Wait for 5 minutes
