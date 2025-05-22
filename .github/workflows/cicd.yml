@@ -65,18 +65,8 @@ jobs:
         run: |
           mkdir -p ~/.ssh
           chmod 700 ~/.ssh
-          # Write key with proper formatting and verify
-          cat << 'EOF' > ~/.ssh/id_rsa
-          ${{ secrets.SSH_PRIVATE_KEY }}
-          EOF
+           echo "${{ secrets.ANSIBLE_SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
-    
-          # Verify key
-          echo "Key contents:"
-          head -n 3 ~/.ssh/id_rsa
-          echo "Key file size:"
-          ls -lh ~/.ssh/id_rsa
-          
           ssh-keyscan -H $MASTER_NODE_IP >> ~/.ssh/known_hosts
           ssh-keyscan -H $WORKER_NODE_1_IP >> ~/.ssh/known_hosts
           ssh-keyscan -H $WORKER_NODE_2_IP >> ~/.ssh/known_hosts
@@ -84,9 +74,6 @@ jobs:
       - name: Show first line of private key (should be BEGIN RSA)
         run: head -n 1 ~/.ssh/id_rsa
 
-      - name: Test SSH connectivity
-        run: |
-         ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no ubuntu@$MASTER_NODE_IP "hostname"
 
       - name: Run Ansible Playbook
         run: |
@@ -104,7 +91,6 @@ jobs:
         run: |
           cd terraform
           terraform destroy -auto-approve
-
 
 
       
