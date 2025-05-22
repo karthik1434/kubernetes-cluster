@@ -43,11 +43,12 @@
         url: https://pkgs.k8s.io/core:/stable:/v1.28/deb/Release.key
         dest: /etc/apt/keyrings/kubernetes-apt-keyring.gpg
 
-        
+
     - name: Convert GPG key to proper format (dearmor)
       command: gpg --dearmor -o /etc/apt/keyrings/kubernetes-archive-keyring.gpg /etc/apt/keyrings/kubernetes-apt-keyring.gpg
       args:
         creates: /etc/apt/keyrings/kubernetes-archive-keyring.gpg
+      command: gpg --list-keys --keyring /etc/apt/keyrings/kubernetes-archive-keyring.gpg
 
     
     - name: Update apt cache
