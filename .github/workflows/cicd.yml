@@ -70,11 +70,7 @@ jobs:
           ssh-keyscan -H $MASTER_NODE_IP >> ~/.ssh/known_hosts
           ssh-keyscan -H $WORKER_NODE_1_IP >> ~/.ssh/known_hosts
           ssh-keyscan -H $WORKER_NODE_2_IP >> ~/.ssh/known_hosts
-
-      - name: Show first line of private key (should be BEGIN RSA)
-        run: head -n 1 ~/.ssh/id_rsa
-
-
+          
       - name: Run Ansible Playbook
         run: |
           cd k8s-ansible
