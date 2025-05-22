@@ -1,53 +1,22 @@
-- name: Install dependencies
-  apt:
-    name:
-      - curl
-      - apt-transport-https
-      - ca-certificates
-      - software-properties-common
-    state: present
-    update_cache: true
 
-- name: Add Docker repo
-  shell: |
-    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
-    echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
-  args:
-    executable: /bin/bash
 
-- name: Install Docker
-  apt:
-    name: docker-ce
-    state: present
-    update_cache: true
+    - name: Initialize Kubernetes cluster
+      shell: kubeadm init --pod-network-cidr=192.168.0.0/16  --ignore-preflight-errors=NumCPU,Mem
 
-- name: Enable Docker
-  systemd:
-    name: docker
-    enabled: yes
-    state: started
+    - name: Set up kubeconfig for regular user
+      shell: |
+        mkdir -p $HOME/.kube
+        cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+        chown $(id -u):$(id -g) $HOME/.kube/config
 
-- name: Add Kubernetes repo
-  shell: |
-    curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add -
-    echo "deb http://apt.kubernetes.io/ kubernetes-xenial main" | sudo tee /etc/apt/sources.list.d/kubernetes.list
-  args:
-    executable: /bin/bash
+    - name: Deploy CNI networking (example with Calico)
+      shell: kubectl apply -f https://docs.projectcalico.org/manifests/calico.yaml
 
-- name: Install kubelet, kubeadm, kubectl
-  apt:
-    name:
-      - kubelet
-      - kubeadm
-      - kubectl
-    state: present
-    update_cache: true
+    - name: Generate token for worker nodes
+      shell: kubeadm token create --print-join-command
+      register: join_command
 
-- name: Turn off swap
-  command: swapoff -a
-
-- name: Disable swap permanently
-  replace:
-    path: /etc/fstab
-    regexp: '^([^#].*\sswap\s.*)$'
-    replace: '# \1'
+    - name: Save join command to a file
+      copy:
+        content: "{{ join_command.stdout }}"
+        dest: /tmp/join_command.sh
