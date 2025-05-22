@@ -73,9 +73,8 @@ jobs:
 
           cat ~/.ssh/karthik.pem
 
-      - name: Show first line of key (debug only)
-        run: |
-          head -n 1 ~/.ssh/karthik.pem
+      - name: Show first line of private key (should be BEGIN RSA)
+        run: head -n 1 ~/.ssh/id_rsa
 
 
       - name: Run Ansible Playbook
