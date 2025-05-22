@@ -33,33 +33,12 @@ jobs:
         run: |
           cd terraform
 
-          # Use full path to terraform binary
-          /home/runner/work/_temp/***/terraform-bin output -json > tf_outputs.json
-
-          MASTER=$(jq -r '.master_node_ip.value' tf_outputs.json)
-          WORKER1=$(jq -r '.worker_node_1_ip.value' tf_outputs.json)
-          WORKER2=$(jq -r '.worker_node_2_ip.value' tf_outputs.json)
-
-          echo "MASTER_NODE_IP=$MASTER" >> $GITHUB_ENV
-          echo "WORKER_NODE_1_IP=$WORKER1" >> $GITHUB_ENV
-          echo "WORKER_NODE_2_IP=$WORKER2" >> $GITHUB_ENV
-
-      - name: Use the output values
-        run: |
-          echo "Master IP: $MASTER_NODE_IP"
-          echo "Worker 1 IP: $WORKER_NODE_1_IP"
-          echo "Worker 2 IP: $WORKER_NODE_2_IP"
+          env:
+          MASTER_NODE_IP: ${{ steps.tf.outputs.master_node_ip }}
+          WORKER_NODE_1_IP: ${{ steps.tf.outputs.worker_node_1_ip }}
+          WORKER_NODE_2_IP: ${{ steps.tf.outputs.worker_node_2_ip }}
 
 
-
-        
-
-      - name: Set up SSH key
-        run: |
-          mkdir -p ~/.ssh
-          echo "${{ secrets.ANSIBLE_SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
-          chmod 600 ~/.ssh/id_rsa
-          cat ~/.ssh/id_rsa
 
       - name: Install Ansible and jq
         run: |
@@ -71,7 +50,20 @@ jobs:
           sed -i "s/\$MASTER_NODE_IP/${{ env.MASTER_NODE_IP }}/g" k8s-ansible/hosts.ini
           sed -i "s/\$WORKER_NODE_1_IP/${{ env.WORKER_NODE_1_IP }}/g" k8s-ansible/hosts.ini
           sed -i "s/\$WORKER_NODE_2_IP/${{ env.WORKER_NODE_2_IP }}/g" k8s-ansible/hosts.ini
-          cat k8s-ansible/hosts.ini
+
+
+      - name: Set up SSH for Ansible
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/karthik.pem
+          chmod 600 ~/.ssh/karthik.pem
+          ssh-keyscan -H $MASTER_NODE_IP >> ~/.ssh/known_hosts
+          ssh-keyscan -H $WORKER_NODE_1_IP >> ~/.ssh/known_hosts
+          ssh-keyscan -H $WORKER_NODE_2_IP >> ~/.ssh/known_hosts
+
+
+      - name: Run Ansible Playbook to check SSH connectivity
+        run: ansible-playbook playbooks/init.yaml
           
 
       - name: Wait for 5 minutes

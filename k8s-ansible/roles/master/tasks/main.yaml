@@ -1,37 +1,53 @@
-- name: Initialize Kubernetes master
-  command: kubeadm init --pod-network-cidr=192.168.0.0/16
-  register: kubeadm_output
-  ignore_errors: yes
+- name: Install dependencies
+  apt:
+    name:
+      - curl
+      - apt-transport-https
+      - ca-certificates
+      - software-properties-common
+    state: present
+    update_cache: true
 
-- name: Create .kube directory
-  file:
-    path: /home/ubuntu/.kube
-    state: directory
-    owner: ubuntu
-    group: ubuntu
-    mode: 0755
-
-- name: Copy kube config
-  copy:
-    src: /etc/kubernetes/admin.conf
-    dest: /home/ubuntu/.kube/config
-    remote_src: yes
-    owner: ubuntu
-
-- name: Install Calico network plugin
-  become: false
+- name: Add Docker repo
   shell: |
-    kubectl apply -f https://raw.githubusercontent.com/projectcalico/calico/v3.25.0/manifests/calico.yaml
-  environment:
-    KUBECONFIG: /home/ubuntu/.kube/config
+    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
+    echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+  args:
+    executable: /bin/bash
 
-- name: Get join command
-  shell: kubeadm token create --print-join-command
-  register: join_command
-  delegate_to: master
+- name: Install Docker
+  apt:
+    name: docker-ce
+    state: present
+    update_cache: true
 
-- name: Save join command to file
-  copy:
-    content: "{{ join_command.stdout }}"
-    dest: /home/ubuntu/join.sh
-    mode: 0755
+- name: Enable Docker
+  systemd:
+    name: docker
+    enabled: yes
+    state: started
+
+- name: Add Kubernetes repo
+  shell: |
+    curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add -
+    echo "deb http://apt.kubernetes.io/ kubernetes-xenial main" | sudo tee /etc/apt/sources.list.d/kubernetes.list
+  args:
+    executable: /bin/bash
+
+- name: Install kubelet, kubeadm, kubectl
+  apt:
+    name:
+      - kubelet
+      - kubeadm
+      - kubectl
+    state: present
+    update_cache: true
+
+- name: Turn off swap
+  command: swapoff -a
+
+- name: Disable swap permanently
+  replace:
+    path: /etc/fstab
+    regexp: '^([^#].*\sswap\s.*)$'
+    replace: '# \1'
