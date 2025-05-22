@@ -76,7 +76,7 @@ jobs:
 
       - name: Test SSH connectivity
         run: |
-         ssh -i ~/.ssh/karthik.pem -o StrictHostKeyChecking=no ubuntu@$MASTER_NODE_IP "hostname"
+         ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no ubuntu@$MASTER_NODE_IP "hostname"
 
       - name: Run Ansible Playbook
         run: |
