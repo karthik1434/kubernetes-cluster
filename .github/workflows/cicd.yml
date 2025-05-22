@@ -74,6 +74,9 @@ jobs:
       - name: Show first line of private key (should be BEGIN RSA)
         run: head -n 1 ~/.ssh/id_rsa
 
+      - name: Test SSH connectivity
+        run: |
+         ssh -i ~/.ssh/karthik.pem -o StrictHostKeyChecking=no ubuntu@$MASTER_NODE_IP "hostname"
 
       - name: Run Ansible Playbook
         run: |
@@ -91,6 +94,7 @@ jobs:
         run: |
           cd terraform
           terraform destroy -auto-approve
+
 
 
       
