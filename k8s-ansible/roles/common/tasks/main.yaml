@@ -13,11 +13,15 @@
         state: present
 
     - name: Add Kubernetes APT repository
-      shell: |
-        curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.28/deb/Release.key | sudo tee /etc/apt/trusted.gpg.d/kubernetes-archive-keyring.gpg > /dev/null
-        echo "deb https://pkgs.k8s.io/core:/stable:/v1.28/deb/ /" | sudo tee /etc/apt/sources.list.d/kubernetes.list
-      args:
-        executable: /bin/bash
+      apt_repository:
+        repo: "deb [signed-by=/usr/share/keyrings/kubernetes-archive-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.28/deb/ /"
+        state: present
+        filename: kubernetes
+
+    - name: Add Kubernetes GPG key
+      get_url:
+        url: https://pkgs.k8s.io/core:/stable:/v1.28/deb/Release.key
+        dest: /usr/share/keyrings/kubernetes-archive-keyring.gpg
 
     - name: Update apt and install Kubernetes components
       apt:
@@ -29,8 +33,6 @@
         update_cache: yes
 
     - name: Disable swap (required for Kubernetes)
-      shell: swapoff -a
-      args:
-        executable: /bin/bash
+      command: swapoff -a
 
-  
+    
