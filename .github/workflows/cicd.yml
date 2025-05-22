@@ -81,7 +81,7 @@ jobs:
       - name: Run Ansible Playbook
         run: |
           cd k8s-ansible
-          ansible-playbook playbooks/init.yaml
+          ansible-playbook k8s-ansible/playbooks/init.yaml
 
           
 
