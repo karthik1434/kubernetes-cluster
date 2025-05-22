@@ -65,13 +65,18 @@ jobs:
         run: |
           mkdir -p ~/.ssh
           chmod 700 ~/.ssh
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/karthik.pem
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" | tr -d '\r' > ~/.ssh/karthik.pem
           chmod 600 ~/.ssh/karthik.pem
           ssh-keyscan -H $MASTER_NODE_IP >> ~/.ssh/known_hosts
           ssh-keyscan -H $WORKER_NODE_1_IP >> ~/.ssh/known_hosts
           ssh-keyscan -H $WORKER_NODE_2_IP >> ~/.ssh/known_hosts
 
           cat ~/.ssh/karthik.pem
+
+      - name: Show first line of key (debug only)
+        run: |
+          head -n 1 ~/.ssh/karthik.pem
+
 
       - name: Run Ansible Playbook
         run: |
