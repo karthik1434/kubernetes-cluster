@@ -36,6 +36,8 @@ jobs:
           # Use full path to terraform binary
           /home/runner/work/_temp/***/terraform-bin output -json > tf_outputs.json
 
+          cat tf_outputs.json
+
           MASTER=$(jq -r '.master_node_ip.value' tf_outputs.json)
           WORKER1=$(jq -r '.worker_node_1_ip.value' tf_outputs.json)
           WORKER2=$(jq -r '.worker_node_2_ip.value' tf_outputs.json)
@@ -56,15 +58,25 @@ jobs:
           sed -i "s/\$WORKER_NODE_1_IP/${{ env.WORKER_NODE_1_IP }}/g" k8s-ansible/hosts.ini
           sed -i "s/\$WORKER_NODE_2_IP/${{ env.WORKER_NODE_2_IP }}/g" k8s-ansible/hosts.ini
 
+          cat k8s-ansible/hosts.ini
+
 
       - name: Set up SSH for Ansible
         run: |
           mkdir -p ~/.ssh
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
-          chmod 600 ~/.ssh/id_rsa
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/karthik.pem
+          chmod 600 ~/.ssh/karthik.pem
           ssh-keyscan -H $MASTER_NODE_IP >> ~/.ssh/known_hosts
           ssh-keyscan -H $WORKER_NODE_1_IP >> ~/.ssh/known_hosts
           ssh-keyscan -H $WORKER_NODE_2_IP >> ~/.ssh/known_hosts
+
+          cat ~/.ssh/karthik.pem
+
+      - name: Run Ansible Playbook
+        run: |
+          cd k8-ansible
+          ansible-playbook playbooks/init.yaml
+
           
 
       - name: Wait for 5 minutes
