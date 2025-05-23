@@ -3,7 +3,7 @@
     src: /home/ubuntu/join.sh
     dest: /tmp/join.sh
     flat: yes
-  delegate_to: master
+  delegate_to: master_node
 
 - name: Transfer join command to worker
   copy:

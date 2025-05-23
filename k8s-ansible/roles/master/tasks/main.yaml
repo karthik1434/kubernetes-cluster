@@ -22,7 +22,7 @@
     kubectl apply -f "https://github.com/flannel-io/flannel/releases/latest/download/kube-flannel.yml"
   register: result
   ignore_errors: true
-  
+
 - name: Debug output if it fails
   ansible.builtin.debug:
     msg: "{{ result.stderr }}"
@@ -37,5 +37,5 @@
 - name: Save join command to a file
   copy:
     content: "{{ join_command.stdout }}"
-    dest: /tmp/join_command.sh
+    dest: /home/ubuntu/join.sh
     mode: '0644'
