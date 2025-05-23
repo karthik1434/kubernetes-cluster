@@ -17,10 +17,15 @@
     group: "ubuntu"
     mode: '0600'
 
-- name: Deploy CNI networking (example with Flannel)
+- name: Download Flannel YAML
+  ansible.builtin.get_url:
+    url: "https://github.com/flannel-io/flannel/releases/latest/download/kube-flannel.yml"
+    dest: "/tmp/kube-flannel.yml"
+
+- name: Apply Flannel CNI
   kubernetes.core.k8s:
     state: present
-    definition: "{{ lookup('url', 'https://github.com/flannel-io/flannel/releases/latest/download/kube-flannel.yml') | from_yaml }}"
+    src: "/tmp/kube-flannel.yml"
 
 - name: Generate token for worker nodes
   command:
