@@ -4,17 +4,17 @@
 
 - name: Set up kubeconfig for regular user
   file:
-    path: "{{ ansible_env.HOME }}/.kube"
+    path: "$HOME/.kube"
     state: directory
     mode: '0755'
 
 - name: Copy admin kubeconfig
   copy:
     src: /etc/kubernetes/admin.conf
-    dest: "{{ ansible_env.HOME }}/.kube/config"
+    dest: "$HOME/.kube/config"
     remote_src: yes
-    owner: "{{ ansible_env.USER }}"
-    group: "{{ ansible_env.USER }}"
+    owner: "ubuntu"
+    group: "ubuntu"
     mode: '0600'
 
 - name: Deploy CNI networking (example with Flannel)
