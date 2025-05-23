@@ -4,14 +4,14 @@
 
 - name: Set up kubeconfig for regular user
   file:
-    path: "$HOME/.kube"
+    path: "/home/ubuntu/.kube"
     state: directory
     mode: '0755'
 
 - name: Copy admin kubeconfig
   copy:
     src: /etc/kubernetes/admin.conf
-    dest: "$HOME/.kube/config"
+    dest: "/home/ubuntu/.kube/config"
     remote_src: yes
     owner: "ubuntu"
     group: "ubuntu"
