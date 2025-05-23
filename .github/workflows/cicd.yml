@@ -80,7 +80,7 @@ jobs:
 
       - name: Wait for 5 minutes
         if: always()
-        run: sleep 600
+        run: sleep 800
   
       - name: Terraform Destroy
         if: always()
