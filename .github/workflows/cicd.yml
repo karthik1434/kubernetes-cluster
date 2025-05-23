@@ -75,7 +75,7 @@ jobs:
         run: |
           cd k8s-ansible
           ansible-playbook playbooks/init.yaml
-          ansible-playbook playbooks/k8s-master.yaml
+          ansible-playbook playbooks/k8s-master.yaml -vvv
           ansible-playbook playbooks/k8s-worker.yaml
 
       - name: Wait for 5 minutes
