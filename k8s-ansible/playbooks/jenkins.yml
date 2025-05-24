@@ -1,0 +1,6 @@
+---
+- name: jenkins instalation
+  hosts: jenkins_server
+  become: yes
+  roles:
+    -jenkins

@@ -37,14 +37,15 @@ jobs:
           /home/runner/work/_temp/***/terraform-bin output -json > tf_outputs.json
 
           cat tf_outputs.json
+          JENKINS_SERVER=$(jq -r '.jenkins_server_ip.value' tf_outputs.json)
+          #MASTER=$(jq -r '.master_node_ip.value' tf_outputs.json)
+          #WORKER1=$(jq -r '.worker_node_1_ip.value' tf_outputs.json)
+          #WORKER2=$(jq -r '.worker_node_2_ip.value' tf_outputs.json)
 
-          MASTER=$(jq -r '.master_node_ip.value' tf_outputs.json)
-          WORKER1=$(jq -r '.worker_node_1_ip.value' tf_outputs.json)
-          WORKER2=$(jq -r '.worker_node_2_ip.value' tf_outputs.json)
-
-          echo "MASTER_NODE_IP=$MASTER" >> $GITHUB_ENV
-          echo "WORKER_NODE_1_IP=$WORKER1" >> $GITHUB_ENV
-          echo "WORKER_NODE_2_IP=$WORKER2" >> $GITHUB_ENV
+          #echo "MASTER_NODE_IP=$MASTER" >> $GITHUB_ENV
+          #echo "WORKER_NODE_1_IP=$WORKER1" >> $GITHUB_ENV
+          #echo "WORKER_NODE_2_IP=$WORKER2" >> $GITHUB_ENV
+          echo "JENKINS_SERVER_IP=$JENKINS_SERVER" >> $GITHUB_ENV
 
 
       - name: Install Ansible and jq
@@ -54,9 +55,11 @@ jobs:
 
       - name: Update hosts.ini with IPs
         run: |
-          sed -i "s/\$MASTER_NODE_IP/${{ env.MASTER_NODE_IP }}/g" k8s-ansible/hosts.ini
-          sed -i "s/\$WORKER_NODE_1_IP/${{ env.WORKER_NODE_1_IP }}/g" k8s-ansible/hosts.ini
-          sed -i "s/\$WORKER_NODE_2_IP/${{ env.WORKER_NODE_2_IP }}/g" k8s-ansible/hosts.ini
+
+          sed -i "s/\$jenkins_server_IP/${{ env.JENKINS_SERVER_IP }}/g" k8s-ansible/hosts.ini
+          #sed -i "s/\$MASTER_NODE_IP/${{ env.MASTER_NODE_IP }}/g" k8s-ansible/hosts.ini
+          #sed -i "s/\$WORKER_NODE_1_IP/${{ env.WORKER_NODE_1_IP }}/g" k8s-ansible/hosts.ini
+          #sed -i "s/\$WORKER_NODE_2_IP/${{ env.WORKER_NODE_2_IP }}/g" k8s-ansible/hosts.ini
 
           cat k8s-ansible/hosts.ini
 
@@ -65,18 +68,20 @@ jobs:
         run: |
           mkdir -p ~/.ssh
           chmod 700 ~/.ssh
-           echo "${{ secrets.ANSIBLE_SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          echo "${{ secrets.ANSIBLE_SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
-          ssh-keyscan -H $MASTER_NODE_IP >> ~/.ssh/known_hosts
-          ssh-keyscan -H $WORKER_NODE_1_IP >> ~/.ssh/known_hosts
-          ssh-keyscan -H $WORKER_NODE_2_IP >> ~/.ssh/known_hosts
+          #ssh-keyscan -H $MASTER_NODE_IP >> ~/.ssh/known_hosts
+          #ssh-keyscan -H $WORKER_NODE_1_IP >> ~/.ssh/known_hosts
+          #ssh-keyscan -H $WORKER_NODE_2_IP >> ~/.ssh/known_hosts
+          ssh-keyscan -H $JENKINS_SERVER_IP >> ~/.ssh/known_hosts
           
       - name: Run Ansible Playbook
         run: |
           cd k8s-ansible
-          ansible-playbook playbooks/init.yaml
-          ansible-playbook playbooks/k8s-master.yaml
-          ansible-playbook playbooks/k8s-worker.yaml
+          #ansible-playbook playbooks/init.yaml
+          #ansible-playbook playbooks/k8s-master.yaml
+          #ansible-playbook playbooks/k8s-worker.yaml
+          ansible-playbook playbooks/jenkins.yaml
 
       - name: Wait for 5 minutes
         if: always()
