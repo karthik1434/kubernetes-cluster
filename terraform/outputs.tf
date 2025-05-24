@@ -1,3 +1,7 @@
+output "jenkins_server" {
+  value = aws_instance.jenkins.public_ip
+}
+
 output "master_node_ip" {
   value = aws_instance.master_node.public_ip
 }
