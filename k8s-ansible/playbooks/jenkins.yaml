@@ -1,6 +1,5 @@
----
-- name: jenkins instalation
-  hosts: jenkins_server
+- name: Setup Kubernetes master node
+  hosts: master
   become: yes
   roles:
-    -jenkins
+    - master
