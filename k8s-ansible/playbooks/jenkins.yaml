@@ -1,5 +1,5 @@
 - name: Setup Kubernetes master node
-  hosts: master
+  hosts: jenkins
   become: yes
   roles:
-    - master
+    - jenkins
