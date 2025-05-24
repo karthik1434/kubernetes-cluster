@@ -1,4 +1,4 @@
-output "jenkins_server" {
+output "jenkins_server_ip" {
   value = aws_instance.jenkins.public_ip
 }
 
