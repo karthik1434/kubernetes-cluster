@@ -44,7 +44,6 @@ resource "aws_instance" "master_node" {
 }*/
 
 resource "aws_instance" "jenkins" {
-  count         = 1
   ami           = "ami-0e35ddab05955cf57"
   instance_type = "t2.micro"
   key_name      = "karthik"
