@@ -1,64 +1,63 @@
+- name: Update and upgrade system packages
+  apt:
+    update_cache: yes
+    upgrade: yes
 
-    - name: Update and upgrade system packages
-      apt:
-        update_cache: yes
-        upgrade: yes
+- name: Install required dependencies
+  apt:
+    name:
+      - apt-transport-https
+      - ca-certificates
+      - curl
+    state: present
 
-    - name: Install required dependencies
-      apt:
-        name:
-          - apt-transport-https
-          - ca-certificates
-          - curl
-        state: present
+- name: Disable swap (required for Kubernetes)
+  command: swapoff -a
+  changed_when: false
 
-    - name: Disable swap (required for Kubernetes)
-      command: swapoff -a
-      changed_when: false
+- name: Comment out swap in fstab
+  replace:
+    path: /etc/fstab
+    regexp: '^(.*swap.*)$'
+    replace: '#\1'
 
-    - name: Comment out swap in fstab
-      replace:
-        path: /etc/fstab
-        regexp: '^(.*swap.*)$'
-        replace: '#\1'
+- name: Install Docker
+  apt:
+    name: docker.io
+    state: present
 
-    - name: Install Docker
-      apt:
-        name: docker.io
-        state: present
+- name: Enable and start Docker service
+  systemd:
+    name: docker
+    enabled: yes
+    state: started
 
-    - name: Enable and start Docker service
-      systemd:
-        name: docker
-        enabled: yes
-        state: started
+- name: Create directory for Kubernetes GPG key
+  file:
+    path: /etc/apt/keyrings
+    state: directory
 
-    - name: Create directory for Kubernetes GPG key
-      file:
-        path: /etc/apt/keyrings
-        state: directory
-
-    - name: Create keyrings directory
-      file:
-        path: /etc/apt/keyrings
-        state: directory
+- name: Create keyrings directory
+  file:
+    path: /etc/apt/keyrings
+    state: directory
         mode: '0755'
 
-    - name: Download and dearmor Kubernetes GPG key
-      shell: |
-        curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.28/deb/Release.key | gpg --dearmor | tee /etc/apt/keyrings/kubernetes-apt-keyring.gpg > /dev/null
+- name: Download and dearmor Kubernetes GPG key
+  shell: |
+    curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.28/deb/Release.key | gpg --dearmor | tee /etc/apt/keyrings/kubernetes-apt-keyring.gpg > /dev/null
 
-    - name: Add Kubernetes repository
-      lineinfile:
-        path: /etc/apt/sources.list.d/kubernetes.list
-        create: yes
-        line: 'deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.28/deb/ /'
+- name: Add Kubernetes repository
+  lineinfile:
+    path: /etc/apt/sources.list.d/kubernetes.list
+    create: yes
+    line: 'deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.28/deb/ /'
 
-    - name: Update package list
-      apt:
-        update_cache: yes
+- name: Update package list
+  apt:
+    update_cache: yes
 
-    - name: Install Kubernetes components
-      apt:
-        name: ["kubelet", "kubeadm", "kubectl"]
-        state: present
+- name: Install Kubernetes components
+  apt:
+    name: ["kubelet", "kubeadm", "kubectl"]
+    state: present
