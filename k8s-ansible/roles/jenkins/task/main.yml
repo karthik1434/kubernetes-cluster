@@ -11,10 +11,11 @@
     - name: Install dependencies
       apt:
         name:
+          - wget
+          - apt-transport-https
           - openjdk-17-jdk
           - ca-certificates
-          - apt-transport-https
-          - wget
+          
         state: present
 
     - name: Add Jenkins repository key

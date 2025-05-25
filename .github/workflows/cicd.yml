@@ -81,7 +81,7 @@ jobs:
           #ansible-playbook playbooks/init.yaml
           #ansible-playbook playbooks/k8s-master.yaml
           #ansible-playbook playbooks/k8s-worker.yaml
-          ansible-playbook playbooks/jenkins.yaml
+          ansible-playbook playbooks/jenkins.yaml -VVV
 
       - name: Wait for 5 minutes
         if: always()
